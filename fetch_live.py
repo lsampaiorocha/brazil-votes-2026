@@ -77,6 +77,43 @@ class RateLimiter:
 rate_limiter = RateLimiter(MAX_REQUESTS_PER_SECOND)
 
 
+def parse_timestamp(text: str) -> datetime:
+    return datetime.strptime(text, "%d/%m/%Y %H:%M:%S").replace(tzinfo=BRASILIA)
+
+
+def combine_results(results: list[dict], calls_from: dict) -> dict:
+    votes_by_number: dict[str, int] = {}
+    for result in results:
+        for candidate in result["candidates"]:
+            votes_by_number[candidate["number"]] = (
+                votes_by_number.get(candidate["number"], 0) + candidate["votes"]
+            )
+    candidates = [
+        {**candidate, "votes": votes_by_number.get(candidate["number"], 0)}
+        for candidate in calls_from["candidates"]
+    ]
+    candidates.sort(key=lambda candidate: (-candidate["votes"], candidate["number"]))
+    totalized = [result["as_of"] for result in results if result["as_of"]]
+    combined = {
+        key: sum(result[key] for result in results)
+        for key in (
+            "sections_total",
+            "sections_counted",
+            "electorate",
+            "electorate_counted",
+            "turnout",
+            "valid",
+            "blank",
+            "null",
+        )
+    }
+    return {
+        "as_of": max(totalized, key=parse_timestamp) if totalized else None,
+        **combined,
+        "candidates": candidates,
+    }
+
+
 def parse_unified_result(payload: dict) -> dict:
     candidates = [
         {
@@ -93,6 +130,11 @@ def parse_unified_result(payload: dict) -> dict:
     ]
     candidates.sort(key=lambda candidate: (-candidate["votes"], candidate["number"]))
     totalized_at = f"{payload['dt']} {payload['ht']}".strip()
+    generated_at = f"{payload['dg']} {payload['hg']}"
+    # The abroad file stamps totalization in a foreign local time (it read "05/10 09:19" on the
+    # evening of 04/10), so a totalization time later than the file itself falls back to the file time.
+    if totalized_at and parse_timestamp(totalized_at) > parse_timestamp(generated_at):
+        totalized_at = generated_at
     return {
         "as_of": totalized_at or None,
         "sections_total": int(payload["s"]["ts"]),
@@ -152,6 +194,13 @@ def update_states_and_abroad() -> None:
         return
     state_results = rest[: len(STATES)]
     city_results = rest[len(STATES) :]
+    if all(state_results):
+        # TSE's national file can freeze while the state files keep updating (it stalled for
+        # 20+ minutes at 47% on election night), so use the sum of the parts when it is ahead.
+        # Candidate statuses (elected, runoff) still come from TSE's national file.
+        summed = combine_results([*state_results, abroad], calls_from=national)
+        if summed["sections_counted"] > national["sections_counted"]:
+            national = summed
     fetched_at = datetime.now(BRASILIA).isoformat(timespec="seconds")
     write_json_atomically(
         DATA / "states.json",

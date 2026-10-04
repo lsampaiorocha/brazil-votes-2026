@@ -114,3 +114,80 @@ def test_update_states_and_abroad_keeps_previous_files_when_totals_are_unavailab
     fetch_live.update_states_and_abroad()
 
     assert list(tmp_path.iterdir()) == []
+
+
+def test_combine_results_adds_up_areas_and_keeps_national_candidate_statuses():
+    def result(as_of, counted, votes_13, votes_22, status_13=""):
+        return {
+            "as_of": as_of,
+            "sections_total": 10,
+            "sections_counted": counted,
+            "electorate": 100,
+            "electorate_counted": counted * 10,
+            "turnout": counted * 8,
+            "valid": votes_13 + votes_22,
+            "blank": 1,
+            "null": 2,
+            "candidates": [
+                {
+                    "number": "13",
+                    "name": "LULA",
+                    "party": "PT",
+                    "votes": votes_13,
+                    "status": status_13,
+                },
+                {
+                    "number": "22",
+                    "name": "FLAVIO BOLSONARO",
+                    "party": "PL",
+                    "votes": votes_22,
+                    "status": "",
+                },
+            ],
+        }
+
+    combined = fetch_live.combine_results(
+        [
+            result("04/10/2026 19:03:13", 6, 30, 50),
+            result("04/10/2026 19:00:25", 4, 40, 20),
+        ],
+        calls_from=result("04/10/2026 18:44:02", 5, 0, 0, status_13="2º turno"),
+    )
+
+    assert combined == {
+        "as_of": "04/10/2026 19:03:13",
+        "sections_total": 20,
+        "sections_counted": 10,
+        "electorate": 200,
+        "electorate_counted": 100,
+        "turnout": 80,
+        "valid": 140,
+        "blank": 2,
+        "null": 4,
+        "candidates": [
+            {
+                "number": "13",
+                "name": "LULA",
+                "party": "PT",
+                "votes": 70,
+                "status": "2º turno",
+            },
+            {
+                "number": "22",
+                "name": "FLAVIO BOLSONARO",
+                "party": "PL",
+                "votes": 70,
+                "status": "",
+            },
+        ],
+    }
+
+
+def test_parse_unified_result_ignores_a_totalization_time_later_than_the_file_itself():
+    payload = json.loads(
+        (Path(__file__).parent / "fixtures" / "sp_2024_prefeito_u.json").read_text()
+    )
+    payload["dg"], payload["hg"] = "04/10/2026", "19:04:22"
+    payload["dt"], payload["ht"] = "05/10/2026", "09:19:47"
+
+    assert parse_unified_result(payload)["as_of"] == "04/10/2026 19:04:22"
