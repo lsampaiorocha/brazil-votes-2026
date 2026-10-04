@@ -1,0 +1,187 @@
+tse_code,city,country,region,lat,lon
+29254,Abidjan,Côte d'Ivoire,Africa,5.36,-4.01
+29262,Abu Dhabi,United Arab Emirates,Middle East,24.45,54.38
+99198,Abuja,Nigeria,Africa,9.08,7.40
+29270,Accra,Ghana,Africa,5.60,-0.19
+99325,Addis Ababa,Ethiopia,Africa,9.03,38.74
+30457,Amsterdam,Netherlands,Europe,52.37,4.90
+29289,Amman,Jordan,Middle East,31.95,35.93
+29297,Ankara,Turkey,Europe,39.93,32.86
+29300,Algiers,Algeria,Africa,36.75,3.06
+29319,Artigas,Uruguay,South America,-30.40,-56.47
+29327,Asunción,Paraguay,South America,-25.26,-57.58
+39241,Astana,Kazakhstan,Asia,51.17,71.45
+29335,Athens,Greece,Europe,37.98,23.73
+39080,Atlanta,United States of America,North America,33.75,-84.39
+99171,Baghdad,Iraq,Middle East,33.31,44.36
+39128,Baku,Azerbaijan,Asia,40.41,49.87
+99350,Bamako,Mali,Africa,12.64,-8.00
+29343,Bangkok,Thailand,Asia,13.76,100.50
+29351,Barcelona,Spain,Europe,41.39,2.17
+99473,Manama,Bahrain,Middle East,26.23,50.59
+29360,Beirut,Lebanon,Middle East,33.89,35.50
+29378,Belgrade,Serbia,Europe,44.79,20.45
+38881,Belmopan,Belize,C. America & Caribbean,17.25,-88.76
+29386,Berlin,Germany,Europe,52.52,13.40
+29394,Bissau,Guinea-Bissau,Africa,11.86,-15.60
+29408,Bogotá,Colombia,South America,4.71,-74.07
+29416,Boston,United States of America,North America,42.36,-71.06
+39209,Bratislava,Slovakia,Europe,48.15,17.11
+39187,Brazzaville,Congo,Africa,-4.27,15.28
+29424,Bridgetown,Barbados,C. America & Caribbean,13.10,-59.62
+29432,Brussels,Belgium,Europe,50.85,4.35
+29440,Bucharest,Romania,Europe,44.43,26.10
+29459,Budapest,Hungary,Europe,47.50,19.04
+29467,Buenos Aires,Argentina,South America,-34.60,-58.38
+29475,Cayenne,France,South America,4.92,-52.33
+29483,Cairo,Egypt,Africa,30.04,31.24
+29491,Canberra,Australia,Oceania,-35.28,149.13
+30651,Guangzhou,China,Asia,23.13,113.26
+29505,Caracas,Venezuela,South America,10.49,-66.88
+99384,Castries,Saint Lucia,C. America & Caribbean,14.01,-60.99
+29513,Chicago,United States of America,North America,41.88,-87.63
+29521,Chuy,Uruguay,South America,-33.70,-53.46
+29530,Cape Town,South Africa,Africa,-33.92,18.42
+29556,Ciudad del Este,Paraguay,South America,-25.51,-54.61
+29564,Ciudad Guayana,Venezuela,South America,8.35,-62.64
+99210,Cobija,Bolivia,South America,-11.03,-68.77
+29572,Cochabamba,Bolivia,South America,-17.39,-66.16
+30929,Colombo,Sri Lanka,Asia,6.93,79.86
+38903,Conakry,Guinea,Africa,9.64,-13.58
+29580,Concepción,Paraguay,South America,-23.41,-57.43
+29599,Copenhagen,Denmark,Europe,55.68,12.57
+38920,Cotonou,Benin,Africa,6.37,2.39
+29602,Córdoba,Argentina,South America,-31.42,-64.18
+29610,Dakar,Senegal,Africa,14.72,-17.47
+29629,Dhaka,Bangladesh,Asia,23.81,90.41
+29637,Damascus,Syria,Middle East,33.51,36.29
+38962,Dar es Salaam,Tanzania,Africa,-6.79,39.21
+29653,Doha,Qatar,Middle East,25.29,51.53
+29661,Dublin,Ireland,Europe,53.35,-6.26
+29645,Dili,Timor-Leste,Asia,-8.56,125.57
+99503,Edinburgh,United Kingdom,Europe,55.95,-3.19
+29670,Encarnación,Paraguay,South America,-27.33,-55.87
+29688,Stockholm,Sweden,Europe,59.33,18.07
+30961,Faro,Portugal,Europe,37.02,-7.93
+29696,Frankfurt,Germany,Europe,50.11,8.68
+30669,Gaborone,Botswana,Africa,-24.65,25.91
+29700,Geneva,Switzerland,Europe,46.20,6.14
+29718,Georgetown,Guyana,South America,6.80,-58.16
+98000,Guatemala City,Guatemala,C. America & Caribbean,14.63,-90.51
+29742,Hamamatsu,Japan,Asia,34.71,137.73
+29750,Hanoi,Vietnam,Asia,21.03,105.85
+29769,Harare,Zimbabwe,Africa,-17.83,31.05
+30902,Hartford,United States of America,North America,41.76,-72.69
+29777,Havana,Cuba,C. America & Caribbean,23.11,-82.37
+29785,Helsinki,Finland,Europe,60.17,24.94
+29793,Hong Kong,Hong Kong,Asia,22.32,114.17
+29807,Houston,United States of America,North America,29.76,-95.37
+29815,Yaoundé,Cameroon,Africa,3.85,11.50
+38989,Yerevan,Armenia,Asia,40.18,44.51
+29823,Iquitos,Peru,South America,-3.75,-73.25
+29831,Islamabad,Pakistan,Asia,33.68,73.05
+39306,Istanbul,Turkey,Europe,41.01,28.98
+29840,Jakarta,Indonesia,Asia,-6.21,106.85
+29173,Kathmandu,Nepal,Asia,27.72,85.32
+29858,Kyiv,Ukraine,Europe,50.45,30.52
+99430,Kingston,Jamaica,C. America & Caribbean,17.97,-76.79
+29874,Kinshasa,Dem. Rep. Congo,Africa,-4.44,15.27
+29882,Kuwait City,Kuwait,Middle East,29.38,47.99
+29890,Kuala Lumpur,Malaysia,Asia,3.14,101.69
+29904,La Paz,Bolivia,South America,-16.50,-68.15
+29912,Lagos,Nigeria,Africa,6.52,3.38
+29939,Libreville,Gabon,Africa,0.42,9.47
+99341,Lilongwe,Malawi,Africa,-13.96,33.79
+29947,Lima,Peru,South America,-12.05,-77.04
+29955,Lisbon,Portugal,Europe,38.72,-9.14
+39160,Ljubljana,Slovenia,Europe,46.06,14.51
+29963,Lomé,Togo,Africa,6.13,1.22
+29971,London,United Kingdom,Europe,51.51,-0.13
+29980,Los Angeles,United States of America,North America,34.05,-118.24
+29998,Luanda,Angola,Africa,-8.84,13.23
+99287,Lusaka,Zambia,Africa,-15.39,28.32
+30066,Madrid,Spain,Europe,40.42,-3.70
+39263,Malabo,Eq. Guinea,Africa,3.75,8.78
+30082,Manila,Philippines,Asia,14.60,120.98
+30074,Managua,Nicaragua,C. America & Caribbean,12.11,-86.24
+30090,Maputo,Mozambique,Africa,-25.97,32.57
+99511,Marseille,France,Europe,43.30,5.37
+39102,Muscat,Oman,Middle East,23.59,58.41
+39004,Mendoza,Argentina,South America,-32.89,-68.83
+30104,Mexico City,Mexico,North America,19.43,-99.13
+30112,Miami,United States of America,North America,25.76,-80.19
+30120,Milan,Italy,Europe,45.46,9.19
+30147,Montevideo,Uruguay,South America,-34.90,-56.16
+30155,Montreal,Canada,North America,45.50,-73.57
+30163,Moscow,Russia,Europe,55.76,37.62
+30171,Mumbai,India,Asia,19.08,72.88
+30180,Munich,Germany,Europe,48.14,11.58
+30198,Nagoya,Japan,Asia,35.18,136.91
+30201,Nairobi,Kenya,Africa,-1.29,36.82
+99180,Nassau,Bahamas,C. America & Caribbean,25.05,-77.36
+39322,Nicosia,Cyprus,Europe,35.17,33.36
+30210,New Delhi,India,Asia,28.61,77.21
+30228,New York,United States of America,North America,40.71,-74.01
+99490,Orlando,United States of America,North America,28.54,-81.38
+30244,Oslo,Norway,Europe,59.91,10.75
+30252,Ottawa,Canada,North America,45.42,-75.70
+30260,Panama City,Panama,C. America & Caribbean,8.98,-79.52
+30279,Paramaribo,Suriname,South America,5.85,-55.20
+30287,Paris,France,Europe,48.86,2.35
+30295,Paso de los Libres,Argentina,South America,-29.71,-57.09
+30309,Pedro Juan Caballero,Paraguay,South America,-22.55,-55.73
+30317,Beijing,China,Asia,39.90,116.41
+30325,Port of Spain,Trinidad and Tobago,C. America & Caribbean,10.66,-61.51
+30341,Porto,Portugal,Europe,41.15,-8.61
+30333,Port-au-Prince,Haiti,C. America & Caribbean,18.54,-72.34
+30350,Prague,Czechia,Europe,50.08,14.44
+30368,Praia,Cabo Verde,Africa,14.93,-23.51
+30376,Pretoria,South Africa,Africa,-25.75,28.19
+99155,Puerto Iguazú,Argentina,South America,-25.60,-54.57
+99236,Puerto Quijarro,Bolivia,South America,-17.78,-57.77
+99295,Pyongyang,North Korea,Asia,39.04,125.76
+30392,Quito,Ecuador,South America,-0.18,-78.47
+30406,Rabat,Morocco,Africa,34.02,-6.83
+30414,Ramallah,Palestine,Middle East,31.90,35.20
+30422,Riyadh,Saudi Arabia,Middle East,24.71,46.68
+30430,Río Branco,Uruguay,South America,-32.60,-53.38
+99244,Rivera,Uruguay,South America,-30.90,-55.55
+30449,Rome,Italy,Europe,41.90,12.50
+99147,St. John's,Antigua and Barb.,C. America & Caribbean,17.12,-61.85
+30465,Salto del Guairá,Paraguay,South America,-24.06,-54.31
+30473,Santa Cruz de la Sierra,Bolivia,South America,-17.78,-63.18
+99279,Santa Elena de Uairén,Venezuela,South America,4.60,-61.11
+30481,Santiago,Chile,South America,-33.45,-70.67
+30988,Sarajevo,Bosnia and Herz.,Europe,43.86,18.41
+30538,Seoul,South Korea,Asia,37.57,126.98
+29548,Singapore,Singapore,Asia,1.35,103.82
+99333,Saint-Georges-de-l'Oyapock,France,South America,3.89,-51.80
+30562,Sydney,Australia,Oceania,-33.87,151.21
+30490,Santo Domingo,Dominican Rep.,C. America & Caribbean,18.49,-69.93
+30503,San Francisco,United States of America,North America,37.77,-122.42
+30511,San José,Costa Rica,C. America & Caribbean,9.93,-84.08
+30520,San Salvador,El Salvador,C. America & Caribbean,13.69,-89.22
+39225,São Tomé,São Tomé and Principe,Africa,0.34,6.73
+30546,Sofia,Bulgaria,Europe,42.70,23.32
+30570,Taipei,Taiwan,Asia,25.03,121.57
+99317,Tallinn,Estonia,Europe,59.44,24.75
+99104,Tbilisi,Georgia,Asia,41.72,44.79
+30597,Tehran,Iran,Middle East,35.69,51.39
+30600,Tegucigalpa,Honduras,C. America & Caribbean,14.07,-87.19
+30619,Tel Aviv,Israel,Middle East,32.09,34.78
+99139,Tirana,Albania,Europe,41.33,19.82
+30635,Toronto,Canada,North America,43.65,-79.38
+30686,Tripoli,Libya,Africa,32.89,13.19
+30708,Tunis,Tunisia,Africa,36.81,10.18
+30627,Tokyo,Japan,Asia,35.68,139.69
+39284,Ouagadougou,Burkina Faso,Africa,12.37,-1.52
+39063,Vancouver,Canada,North America,49.28,-123.12
+30740,Warsaw,Poland,Europe,52.23,21.01
+30767,Vienna,Austria,Europe,48.21,16.37
+30783,Washington,United States of America,North America,38.91,-77.04
+30805,Wellington,New Zealand,Oceania,-41.29,174.78
+30821,Windhoek,Namibia,Africa,-22.56,17.08
+30848,Shanghai,China,Asia,31.23,121.47
+99376,Yangon,Myanmar,Asia,16.84,96.17
+39020,Zagreb,Croatia,Europe,45.81,15.98
+30864,Zurich,Switzerland,Europe,47.38,8.54

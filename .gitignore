@@ -1,2 +1,6 @@
-mockups.html
+web/mockups.html
 *.tmp
+*.log
+__pycache__/
+.pytest_cache/
+.ruff_cache/
