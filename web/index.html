@@ -106,7 +106,8 @@ body {
 .progress { display: grid; gap: 1cqw; }
 .progress-track { height: 1.1cqw; background: var(--no-data); border-radius: 1cqw; overflow: hidden; }
 .progress-fill { height: 100%; width: 0; background: var(--ink); transition: width .6s ease; }
-.progress-labels { display: flex; justify-content: space-between; gap: 2cqw; font: 500 1.85cqw var(--font-mono); color: var(--ink-2); }
+.progress-labels { display: flex; justify-content: space-between; align-items: baseline; gap: 2cqw; font: 500 1.85cqw var(--font-mono); color: var(--ink-2); }
+.counted-big { font: 850 4.2cqw/1 var(--font-display); font-stretch: 112%; color: var(--ink); margin-right: .8cqw; }
 .progress-labels strong { color: var(--ink); font-weight: 600; }
 
 .share { display: grid; gap: 1.5cqw; }
@@ -203,6 +204,12 @@ body {
 .segmented button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
 
+.site-foot {
+  max-width: 1120px; margin: 36px auto 0; padding-top: 14px; border-top: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; font: 500 12.5px var(--font-mono); color: var(--muted);
+}
+.site-foot b { color: var(--ink-2); font-weight: 600; }
+.site-foot a { color: var(--ink-2); }
 .tooltip {
   position: fixed; z-index: 10; pointer-events: none; max-width: 270px; padding: 10px 12px; border-radius: 8px;
   background: var(--ink); color: var(--card); font-size: 13px; box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .5);
@@ -238,7 +245,7 @@ body {
         <div class="share" id="br-share"></div>
         <div class="map" id="br-map"></div>
         <div class="legend" id="br-legend"></div>
-        <div class="card-foot"><span>Source: TSE · resultados.tse.jus.br</span><span id="br-foot"></span></div>
+        <div class="card-foot"><span>Source: TSE · Chart: Leonardo Rocha · CC BY 4.0</span><span id="br-foot"></span></div>
       </div>
     </article>
     <aside class="rail">
@@ -266,7 +273,7 @@ body {
         <div class="share" id="ab-share"></div>
         <div class="map" id="ab-map"></div>
         <div class="cities" id="ab-cities"></div>
-        <div class="card-foot"><span>Source: TSE · resultados.tse.jus.br</span><span id="ab-foot"></span></div>
+        <div class="card-foot"><span>Source: TSE · Chart: Leonardo Rocha · CC BY 4.0</span><span id="ab-foot"></span></div>
       </div>
     </article>
     <aside class="rail">
@@ -293,7 +300,7 @@ body {
         <div class="map" id="sw-map"></div>
         <div class="legend" id="sw-legend"></div>
         <div class="moves" id="sw-moves"></div>
-        <div class="card-foot"><span id="sw-source">Source: TSE · 2022 and 2026 official results</span><span id="sw-foot"></span></div>
+        <div class="card-foot"><span>Source: TSE · Chart: Leonardo Rocha · CC BY 4.0</span><span id="sw-foot"></span></div>
       </div>
     </article>
     <aside class="rail">
@@ -311,6 +318,11 @@ body {
     </aside>
   </section>
 </main>
+
+<footer class="site-foot">
+  <span>Made by <b>Leonardo Rocha</b></span>
+  <span>Charts <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · Code <a href="https://github.com/lsampaiorocha/brazil-votes-2026" target="_blank" rel="noopener">MIT on GitHub</a> · Data: TSE · Unofficial, see <a href="https://resultados.tse.jus.br" target="_blank" rel="noopener">resultados.tse.jus.br</a></span>
+</footer>
 
 <div class="tooltip" id="tooltip" hidden></div>
 
@@ -331,6 +343,8 @@ const marginChip = (strength) => {
   const shade = (number) => d3.interpolateRgb(CARD_COLOR, CANDIDATE_COLORS[number])(strength);
   return `<span class="chip" style="background:linear-gradient(90deg, ${shade(13)} 50%, ${shade(22)} 50%)"></span>`;
 };
+const brasiliaClock = new Intl.DateTimeFormat("en-GB", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const pollsClosed = () => brasiliaClock.format(new Date()) >= "17:00";
 const COUNTED_ENOUGH = 0.9;
 // The site republishes every 10 minutes, so 25 minutes without new data means the feed has stopped.
 const STALE_AFTER_MINUTES = 25;
@@ -409,7 +423,7 @@ function renderProgress(container, result, extraLabel) {
   container.innerHTML = `
     <div class="progress-track"><div class="progress-fill" style="width:${counted}%"></div></div>
     <div class="progress-labels">
-      <span><strong>${formatPercent(counted)}</strong> of ${formatInteger(result.sections_total)} sections counted</span>
+      <span><span class="counted-big">${formatPercent(counted)}</span>of ${formatInteger(result.sections_total)} sections counted</span>
       <span>${extraLabel ?? `Turnout <strong>${result.turnout ? formatPercent(turnout) : "—"}</strong>`}</span>
     </div>`;
 }
@@ -448,8 +462,12 @@ function renderShare(container, result, count, majorityLabel) {
 function headlineFor(result, scope) {
   if (!result.sections_counted) {
     return scope === "brazil"
-      ? { headline: "Counting starts at 17:00", dek: "Polls close at 17:00 Brasília time. TSE publishes results as voting machines report in." }
-      : { headline: "Results from abroad arrive at 17:00", dek: "TSE releases them from 17:00 Brasília time. Cities in the Americas close later and report after Europe and Asia." };
+      ? pollsClosed()
+        ? { headline: "Waiting for TSE's first results", dek: "Polls closed at 17:00 Brasília time. Numbers appear here as soon as TSE releases them." }
+        : { headline: "Counting starts at 17:00", dek: "Polls close at 17:00 Brasília time. TSE publishes results as voting machines report in." }
+      : pollsClosed()
+        ? { headline: "Waiting for TSE's first results from abroad", dek: "Cities in the Americas close later and report after Europe and Asia." }
+        : { headline: "Results from abroad arrive at 17:00", dek: "TSE releases them from 17:00 Brasília time. Cities in the Americas close later and report after Europe and Asia." };
   }
   const candidates = ranked(result);
   const [first, second] = candidates;
@@ -748,7 +766,6 @@ if (DEMO) {
   document.querySelectorAll(".demo-flag").forEach((flag) => { flag.hidden = false; });
   document.querySelectorAll(".card-date").forEach((date) => { date.textContent = "Oct 2, 2022"; });
   document.getElementById("sw-22").textContent = "#22 Jair Bolsonaro";
-  document.getElementById("sw-source").textContent = "Source: TSE · 2022 official results";
 }
 const initialTab = document.getElementById(`tab-${location.hash.slice(1)}`);
 if (initialTab) selectTab(initialTab);
@@ -786,12 +803,12 @@ function renderStatus(states) {
   const live = national.sections_counted > 0 && !stale;
   status.hidden = DEMO;
   status.classList.toggle("live", live);
-  let text = "Waiting for results at 17:00 · last checked";
+  let text = pollsClosed() ? "Waiting for TSE's first results · last checked" : "Waiting for results at 17:00 · last checked";
   let time = checkedAt;
   if (stale) text = "Updates paused · last data from";
   else if (live) {
-    text = `Live · ${formatPercent(countedPercent(national))} counted · TSE update`;
-    time = `${clockOf(national.as_of)} BRT`;
+    text = "Live · TSE update";
+    time = `${formatPercent(countedPercent(national))} counted · ${clockOf(national.as_of)} BRT`;
   }
   document.getElementById("status-text").textContent = text;
   document.getElementById("status-time").textContent = time;

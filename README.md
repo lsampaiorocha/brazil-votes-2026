@@ -47,4 +47,4 @@ python3 -m pytest tests                 # tests
 - Results: [TSE results feed](https://resultados.tse.jus.br) and [TSE open data](https://dadosabertos.tse.jus.br) (CC BY)
 - Maps: [IBGE meshes API](https://servicodados.ibge.gov.br/api/docs/malhas) and [world-atlas](https://github.com/topojson/world-atlas) (Natural Earth, public domain)
 
-Code is released under the [MIT License](LICENSE). This project is not affiliated with TSE.
+Made by Leonardo Rocha. Code is released under the [MIT License](LICENSE); charts and exported images under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). This project is not affiliated with TSE.
