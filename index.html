@@ -60,6 +60,11 @@ body {
   font-size: 26px; letter-spacing: -0.01em; text-wrap: balance;
 }
 .status { display: flex; align-items: center; gap: 8px; font: 500 12.5px var(--font-mono); color: var(--ink-2); }
+.status-time {
+  padding: 3px 9px; border: 1px solid var(--rule); border-radius: 6px; background: var(--card);
+  font: 600 17px var(--font-mono); color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.status-time:empty { display: none; }
 .status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
 .status.live .dot { background: var(--accent); animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: .35; } }
@@ -216,7 +221,7 @@ td.num, th.num { text-align: right; }
 <body>
 <header class="masthead">
   <h1>Brazil Votes 2026</h1>
-  <div class="status" id="status"><span class="dot"></span><span id="status-text">Loading TSE data…</span></div>
+  <div class="status" id="status"><span class="dot"></span><span id="status-text">Loading TSE data…</span><span class="status-time" id="status-time"></span></div>
 </header>
 
 <nav class="tabs" role="tablist" aria-label="Views">
@@ -276,8 +281,9 @@ td.num, th.num { text-align: right; }
         <p class="rail-note">Downloads the card as a 1080 × 1350 PNG.</p>
       </div>
       <p class="rail-note">Brazilians abroad vote only for president, in 186 cities. Bubble size is valid votes counted. Color is the local leader. Polls abroad close at 17:00 local time, so cities in the Americas report later than Europe and Asia.</p>
-      <h2>By city</h2>
-      <div class="table-wrap"><table id="ab-table"></table></div>
+      <h2>Cities sized by voters</h2>
+      <div class="rail-treemap" id="ab-treemap"></div>
+      <p class="rail-note">Tile area is each city's registered voters, grouped by world region. Color is the local leader, as on the map.</p>
     </aside>
   </section>
 
@@ -507,32 +513,37 @@ const REGIONS = {
   Southeast: ["ES", "MG", "RJ", "SP"],
   South: ["PR", "RS", "SC"],
 };
-const formatMillions = (value) => (value >= 1e6 ? `${(value / 1e6).toFixed(1)}M` : `${Math.round(value / 1e3)}k`);
+const formatMillions = (value) => (value >= 1e6 ? `${(value / 1e6).toFixed(1)}M` : value >= 1e3 ? `${Math.round(value / 1e3)}k` : String(value));
 
-function renderBrazilTreemap(states) {
-  const root = d3.hierarchy({
-    children: Object.entries(REGIONS).map(([region, ufs]) => ({
-      name: region,
-      children: ufs.filter((uf) => states[uf]).map((uf) => ({ uf, result: states[uf] })),
-    })),
-  }).sum((node) => node.result?.electorate ?? 0).sort((a, b) => b.value - a.value);
+const ABROAD_REGION_SHORT = { "North America": "N. America", "South America": "S. America", "C. America & Caribbean": "Caribbean", "Middle East": "Mid. East" };
+
+function drawTreemap(svg, groups) {
+  const root = d3.hierarchy({ children: groups }).sum((node) => node.result?.electorate ?? 0).sort((a, b) => b.value - a.value);
   d3.treemap().size([TREEMAP_WIDTH, TREEMAP_HEIGHT]).paddingOuter(3).paddingTop(22).paddingInner(2).round(true)(root);
-  const svg = brazil.treemapSvg;
   svg.selectAll("*").remove();
   const regions = svg.append("g").selectAll("g").data(root.children).join("g");
   regions.append("rect").attr("class", "region-frame")
     .attr("x", (d) => d.x0).attr("y", (d) => d.y0).attr("width", (d) => d.x1 - d.x0).attr("height", (d) => d.y1 - d.y0);
   regions.append("text").attr("class", "region-label").attr("x", (d) => d.x0 + 5).attr("y", (d) => d.y0 + 16)
-    .text((d) => (d.x1 - d.x0 > 150 ? `${d.data.name.toUpperCase()} · ${formatMillions(d.value)}` : d.data.name === "Center-West" ? "C-WEST" : d.data.name.toUpperCase()));
+    .text((d) => {
+      const width = d.x1 - d.x0;
+      if (width > 150) return `${d.data.name.toUpperCase()} · ${formatMillions(d.value)}`;
+      return width > d.data.short.length * 8.5 + 10 ? d.data.short.toUpperCase() : "";
+    });
   const tiles = svg.append("g").selectAll("g").data(root.leaves()).join("g").attr("transform", (d) => `translate(${d.x0},${d.y0})`);
   tiles.append("rect").attr("class", "tile").attr("rx", 2)
     .attr("width", (d) => d.x1 - d.x0).attr("height", (d) => d.y1 - d.y0)
     .attr("fill", (d) => stateFill(d.data.result))
-    .on("mousemove", (event, d) => showTooltip(event, `<h4>${STATE_NAMES[d.data.uf]}</h4><div class="meta">${formatInteger(d.data.result.electorate)} registered voters · ${formatPercent(countedPercent(d.data.result))} counted</div>${candidateRowsHtml(d.data.result)}`))
+    .on("mousemove", (event, d) => showTooltip(event, `<h4>${escapeHtml(d.data.title)}</h4><div class="meta">${escapeHtml(d.data.meta)} · ${formatInteger(d.data.result.electorate)} registered voters · ${formatPercent(countedPercent(d.data.result))} counted</div>${candidateRowsHtml(d.data.result)}`))
     .on("mouseleave", hideTooltip);
-  const labelled = tiles.filter((d) => d.x1 - d.x0 > 24 && d.y1 - d.y0 > 18);
+  // Shrink long labels (city names) to fit their tile, and skip the ones that still don't.
+  const fontSizeFor = (d) => {
+    const width = d.x1 - d.x0;
+    return Math.min(22, 11 + width / 16, (width - 10) / (d.data.label.length * 0.62));
+  };
+  const labelled = tiles.filter((d) => d.y1 - d.y0 > 18 && fontSizeFor(d) >= 9);
   labelled.append("text").attr("class", "tile-text").attr("x", 6).attr("y", 19)
-    .attr("font-size", (d) => Math.min(22, 11 + (d.x1 - d.x0) / 16)).attr("font-weight", 600).text((d) => d.data.uf);
+    .attr("font-size", fontSizeFor).attr("font-weight", 600).text((d) => d.data.label);
   labelled.filter((d) => d.x1 - d.x0 > 48 && d.y1 - d.y0 > 44).append("text").attr("class", "tile-text")
     .attr("x", 6).attr("y", 37).attr("font-size", 13).text((d) => formatMillions(d.data.result.electorate));
   labelled.filter((d) => d.x1 - d.x0 > 84 && d.y1 - d.y0 > 62 && d.data.result.valid).append("text").attr("class", "tile-text")
@@ -561,7 +572,11 @@ function renderBrazil(data) {
   renderShare(document.getElementById("br-share"), national, 4, "Dashed line: 50%, wins without a runoff");
   document.getElementById("br-foot").textContent = footFor(national);
   brazil.paths.attr("fill", (feature) => stateFill(data.states[feature.properties.uf]));
-  renderBrazilTreemap(data.states);
+  drawTreemap(brazil.treemapSvg, Object.entries(REGIONS).map(([region, ufs]) => ({
+    name: region,
+    short: region === "Center-West" ? "C-West" : region,
+    children: ufs.filter((uf) => data.states[uf]).map((uf) => ({ label: uf, title: STATE_NAMES[uf], meta: region, result: data.states[uf] })),
+  })));
 }
 
 /* ---------- Abroad tab ---------- */
@@ -576,6 +591,8 @@ function setupAbroad(world) {
   svg.append("g").selectAll("path").data(countries.features).join("path")
     .attr("class", (feature) => `country${feature.properties.name === "Brazil" ? " home" : ""}`).attr("d", path);
   abroad.bubbles = svg.append("g");
+  abroad.treemapSvg = d3.select("#ab-treemap").append("svg").attr("viewBox", `0 0 ${TREEMAP_WIDTH} ${TREEMAP_HEIGHT}`)
+    .attr("role", "img").attr("aria-label", "Cities abroad sized by registered voters, grouped by world region");
 }
 
 function renderAbroad(data) {
@@ -608,16 +625,11 @@ function renderAbroad(data) {
       <div class="stack">${segments}</div></div>`;
   }).join("");
 
-  const rows = [...data.cities].sort((a, b) => b.electorate - a.electorate);
-  document.getElementById("ab-table").innerHTML = `
-    <thead><tr><th>City</th><th>Country</th><th class="num">Voters</th><th class="num">Counted</th><th>Leader</th><th class="num">Share</th></tr></thead>
-    <tbody>${rows.map((city) => {
-      const leader = city.valid ? ranked(city)[0] : null;
-      return `<tr><td>${escapeHtml(city.city)}</td><td>${escapeHtml(city.country)}</td><td class="num">${formatInteger(city.electorate)}</td>
-        <td class="num">${formatPercent(countedPercent(city))}</td>
-        <td>${leader ? `<span class="swatch" style="background:${colorFor(leader.number)}"></span>${escapeHtml(displayName(leader))}` : "—"}</td>
-        <td class="num">${leader ? formatPercent(shareOf(leader.votes, city.valid)) : "—"}</td></tr>`;
-    }).join("")}</tbody>`;
+  drawTreemap(abroad.treemapSvg, d3.groups(data.cities, (city) => city.region || "Other").map(([region, cities]) => ({
+    name: region,
+    short: ABROAD_REGION_SHORT[region] ?? region,
+    children: cities.map((city) => ({ label: city.city, title: city.city, meta: city.country, result: city })),
+  })));
 }
 
 /* ---------- Swing tab ---------- */
@@ -776,14 +788,12 @@ function renderStatus(states) {
   const national = states.national;
   const checkedAt = states.fetched_at.slice(11, 16);
   const live = national.sections_counted > 0;
-  status.classList.toggle("live", live && !DEMO);
-  if (DEMO) {
-    document.getElementById("status-text").textContent = "Demo · real 2022 results · remove ?demo for live 2026";
-    return;
-  }
+  status.hidden = DEMO;
+  status.classList.toggle("live", live);
   document.getElementById("status-text").textContent = live
-    ? `Live · ${formatPercent(countedPercent(national))} counted · TSE ${clockOf(national.as_of)} BRT`
-    : `Waiting for results at 17:00 · checked ${checkedAt}`;
+    ? `Live · ${formatPercent(countedPercent(national))} counted · TSE update`
+    : "Waiting for results at 17:00 · last checked";
+  document.getElementById("status-time").textContent = live ? `${clockOf(national.as_of)} BRT` : checkedAt;
 }
 
 async function refresh() {
