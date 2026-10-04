@@ -15,6 +15,7 @@ def test_parse_unified_result_reads_progress_turnout_and_ranked_votes_from_tse_f
         "sections_total": 26513,
         "sections_counted": 26513,
         "electorate": 9322444,
+        "electorate_counted": 9322444,
         "turnout": 6773587,
         "valid": 6108218,
         "blank": 241734,

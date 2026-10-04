@@ -425,7 +425,9 @@ function candidateRowsHtml(result, count = 3) {
 
 function renderProgress(container, result, extraLabel) {
   const counted = countedPercent(result);
-  const turnout = result.electorate ? (result.turnout / result.electorate) * 100 : 0;
+  // Turnout among sections already counted; files written before this field existed fall back to the full electorate.
+  const countedElectorate = result.electorate_counted ?? result.electorate;
+  const turnout = countedElectorate ? (result.turnout / countedElectorate) * 100 : 0;
   container.innerHTML = `
     <div class="progress-track"><div class="progress-fill" style="width:${counted}%"></div></div>
     <div class="progress-labels">

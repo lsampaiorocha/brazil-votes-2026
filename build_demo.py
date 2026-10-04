@@ -37,6 +37,7 @@ def build_result(
         "sections_total": sections,
         "sections_counted": sections,
         "electorate": int(details.QT_APTOS.sum()),
+        "electorate_counted": int(details.QT_APTOS.sum()),
         "turnout": int(details.QT_COMPARECIMENTO.sum()),
         "valid": int(details.QT_TOTAL_VOTOS_VALIDOS.sum()),
         "blank": int(details.QT_VOTOS_BRANCOS.sum()),

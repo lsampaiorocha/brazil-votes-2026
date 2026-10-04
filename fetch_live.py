@@ -98,6 +98,7 @@ def parse_unified_result(payload: dict) -> dict:
         "sections_total": int(payload["s"]["ts"]),
         "sections_counted": int(payload["s"]["st"]),
         "electorate": int(payload["e"]["te"]),
+        "electorate_counted": int(payload["e"]["esa"]),
         "turnout": int(payload["e"]["c"]),
         "valid": int(payload["v"]["vv"]),
         "blank": int(payload["v"]["vb"]),
