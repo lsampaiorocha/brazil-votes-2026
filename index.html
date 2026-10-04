@@ -82,7 +82,7 @@ body {
 .stage { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 1fr); gap: 28px; align-items: start; }
 @media (max-width: 920px) { .stage { grid-template-columns: minmax(0, 1fr); } }
 
-/* ---------- share card (sized in container units so the export scales cleanly) ---------- */
+/* Card sizes use container units so the exported PNG scales cleanly. */
 .card {
   container-type: inline-size; width: 100%; aspect-ratio: 4 / 5; background: var(--card);
   border-radius: 10px; overflow: hidden;
@@ -185,7 +185,6 @@ body {
   font: 500 1.65cqw var(--font-mono); color: var(--muted);
 }
 
-/* ---------- details rail ---------- */
 .rail { display: grid; gap: 16px; min-width: 0; }
 .rail-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .save {
@@ -202,11 +201,6 @@ body {
   font: 600 14px var(--font-body); color: var(--ink-2);
 }
 .segmented button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
-.table-wrap { overflow: auto; max-height: 600px; border: 1px solid var(--rule); border-radius: 8px; background: var(--card); }
-table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
-th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--rule); white-space: nowrap; }
-th { position: sticky; top: 0; background: var(--card); font: 600 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
-td.num, th.num { text-align: right; }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
 
 .tooltip {
@@ -332,7 +326,14 @@ const NO_DATA_COLOR = cssVar("--no-data");
 const CARD_COLOR = cssVar("--card");
 const SWING_THRESHOLDS = [-10, -5, -2, 2, 5, 10];
 const SWING_COLORS = ["--loss-3", "--loss-2", "--loss-1", "--even", "--gain-1", "--gain-2", "--gain-3"].map(cssVar);
+const MARGIN_STRENGTHS = [0.42, 0.7, 1];
+const marginChip = (strength) => {
+  const shade = (number) => d3.interpolateRgb(CARD_COLOR, CANDIDATE_COLORS[number])(strength);
+  return `<span class="chip" style="background:linear-gradient(90deg, ${shade(13)} 50%, ${shade(22)} 50%)"></span>`;
+};
 const COUNTED_ENOUGH = 0.9;
+// The site republishes every 10 minutes, so 25 minutes without new data means the feed has stopped.
+const STALE_AFTER_MINUTES = 25;
 // ?demo swaps in real 2022 results (built by build_demo.py) to preview the page before 2026 data exists.
 const DEMO = new URLSearchParams(location.search).has("demo");
 const RESULTS_DIRECTORY = DEMO ? "data-demo" : "data";
@@ -383,7 +384,6 @@ function rewind(geojson) {
   return geojson;
 }
 
-/* ---------- tooltip ---------- */
 const tooltip = document.getElementById("tooltip");
 function showTooltip(event, html) {
   tooltip.innerHTML = html;
@@ -403,7 +403,6 @@ function candidateRowsHtml(result, count = 3) {
     <span>${formatPercent(shareOf(candidate.votes, result.valid))}</span></div>`).join("");
 }
 
-/* ---------- shared pieces ---------- */
 function renderProgress(container, result, extraLabel) {
   const counted = countedPercent(result);
   const turnout = result.electorate ? (result.turnout / result.electorate) * 100 : 0;
@@ -475,7 +474,6 @@ function footFor(result) {
   return clock ? `TSE count as of ${clock} BRT` : "No results released yet";
 }
 
-/* ---------- Brazil tab ---------- */
 const brazil = {};
 function setupBrazil(statesGeo) {
   const width = 600, height = 520;
@@ -499,9 +497,9 @@ function setupBrazil(statesGeo) {
     .text((feature) => feature.properties.uf);
   document.getElementById("br-legend").innerHTML = `
     <span class="key">Lead margin</span>
-    <span class="key"><span class="chip" style="background:${d3.interpolateRgb(CARD_COLOR, cssVar("--ink"))(0.28)}"></span>under 5 pts</span>
-    <span class="key"><span class="chip" style="background:${d3.interpolateRgb(CARD_COLOR, cssVar("--ink"))(0.55)}"></span>5–15 pts</span>
-    <span class="key"><span class="chip" style="background:${d3.interpolateRgb(CARD_COLOR, cssVar("--ink"))(0.85)}"></span>over 15 pts</span>
+    <span class="key">${marginChip(MARGIN_STRENGTHS[0])}under 5 pts</span>
+    <span class="key">${marginChip(MARGIN_STRENGTHS[1])}5–15 pts</span>
+    <span class="key">${marginChip(MARGIN_STRENGTHS[2])}over 15 pts</span>
     <span class="key"><span class="chip" style="background:${NO_DATA_COLOR}"></span>no votes yet</span>`;
 }
 
@@ -536,7 +534,6 @@ function drawTreemap(svg, groups) {
     .attr("fill", (d) => stateFill(d.data.result))
     .on("mousemove", (event, d) => showTooltip(event, `<h4>${escapeHtml(d.data.title)}</h4><div class="meta">${escapeHtml(d.data.meta)} · ${formatInteger(d.data.result.electorate)} registered voters · ${formatPercent(countedPercent(d.data.result))} counted</div>${candidateRowsHtml(d.data.result)}`))
     .on("mouseleave", hideTooltip);
-  // Shrink long labels (city names) to fit their tile, and skip the ones that still don't.
   const fontSizeFor = (d) => {
     const width = d.x1 - d.x0;
     return Math.min(22, 11 + width / 16, (width - 10) / (d.data.label.length * 0.62));
@@ -558,7 +555,7 @@ function stateFill(result) {
   if (!result || !result.valid) return NO_DATA_COLOR;
   const [first, second] = ranked(result);
   const margin = shareOf(first.votes, result.valid) - (second ? shareOf(second.votes, result.valid) : 0);
-  const strength = margin < 5 ? 0.42 : margin < 15 ? 0.7 : 1;
+  const strength = margin < 5 ? MARGIN_STRENGTHS[0] : margin < 15 ? MARGIN_STRENGTHS[1] : MARGIN_STRENGTHS[2];
   return d3.interpolateRgb(CARD_COLOR, colorFor(first.number))(strength);
 }
 
@@ -579,7 +576,6 @@ function renderBrazil(data) {
   })));
 }
 
-/* ---------- Abroad tab ---------- */
 const abroad = {};
 function setupAbroad(world) {
   const width = 600, height = 300;
@@ -632,7 +628,6 @@ function renderAbroad(data) {
   })));
 }
 
-/* ---------- Swing tab ---------- */
 const swing = { number: "13", latest: null };
 const swingColor = d3.scaleThreshold().domain(SWING_THRESHOLDS).range(SWING_COLORS);
 function setupSwing(municipalitiesGeo, statesGeo, lookup, baseline2022) {
@@ -739,7 +734,6 @@ function renderSwing() {
     <div><h3>Biggest drops, pts</h3>${list(drops)}</div>`;
 }
 
-/* ---------- tabs, export, refresh ---------- */
 const tabs = [...document.querySelectorAll(".tab")];
 function selectTab(tab) {
   for (const other of tabs) {
@@ -787,27 +781,38 @@ function renderStatus(states) {
   const status = document.getElementById("status");
   const national = states.national;
   const checkedAt = states.fetched_at.slice(11, 16);
-  const live = national.sections_counted > 0;
+  const minutesSinceFetch = (Date.now() - Date.parse(states.fetched_at)) / 60000;
+  const stale = minutesSinceFetch > STALE_AFTER_MINUTES;
+  const live = national.sections_counted > 0 && !stale;
   status.hidden = DEMO;
   status.classList.toggle("live", live);
-  document.getElementById("status-text").textContent = live
-    ? `Live · ${formatPercent(countedPercent(national))} counted · TSE update`
-    : "Waiting for results at 17:00 · last checked";
-  document.getElementById("status-time").textContent = live ? `${clockOf(national.as_of)} BRT` : checkedAt;
+  let text = "Waiting for results at 17:00 · last checked";
+  let time = checkedAt;
+  if (stale) text = "Updates paused · last data from";
+  else if (live) {
+    text = `Live · ${formatPercent(countedPercent(national))} counted · TSE update`;
+    time = `${clockOf(national.as_of)} BRT`;
+  }
+  document.getElementById("status-text").textContent = text;
+  document.getElementById("status-time").textContent = time;
 }
 
+let lastResultsStamp = null;
 async function refresh() {
-  const bust = `?t=${Date.now()}`;
   try {
-    const [states, abroadData, municipalities] = await Promise.all([
-      d3.json(`${RESULTS_DIRECTORY}/states.json${bust}`),
-      d3.json(`${RESULTS_DIRECTORY}/abroad.json${bust}`),
-      d3.json(`${RESULTS_DIRECTORY}/municipalities_2026.json${bust}`),
-    ]);
-    renderBrazil(states);
-    renderAbroad(abroadData);
-    swing.latest = municipalities.municipalities;
-    renderSwing();
+    const states = await d3.json(`${RESULTS_DIRECTORY}/states.json?t=${Date.now()}`);
+    if (states.fetched_at !== lastResultsStamp) {
+      const version = `?v=${encodeURIComponent(states.fetched_at)}`;
+      const [abroadData, municipalities] = await Promise.all([
+        d3.json(`${RESULTS_DIRECTORY}/abroad.json${version}`),
+        d3.json(`${RESULTS_DIRECTORY}/municipalities_2026.json${version}`),
+      ]);
+      renderBrazil(states);
+      renderAbroad(abroadData);
+      swing.latest = municipalities.municipalities;
+      renderSwing();
+      lastResultsStamp = states.fetched_at;
+    }
     renderStatus(states);
   } catch (error) {
     console.error(error);
@@ -815,22 +820,38 @@ async function refresh() {
   }
 }
 
-(async () => {
-  const [statesGeo, municipalitiesGeo, world, lookup, baseline2022] = await Promise.all([
-    d3.json("geo/states.geojson"),
-    d3.json("geo/municipalities.geojson"),
-    d3.json("geo/countries-110m.json"),
-    d3.json("data/municipality_lookup.json"),
-    d3.json("data/municipalities_2022.json"),
-  ]);
-  rewind(statesGeo);
-  rewind(municipalitiesGeo);
-  setupBrazil(statesGeo);
-  setupAbroad(world);
-  setupSwing(municipalitiesGeo, statesGeo, lookup, baseline2022);
-  await refresh();
-  setInterval(refresh, 60000);
-})();
+async function loadSwing(statesGeo) {
+  try {
+    const [municipalitiesGeo, lookup, baseline2022] = await Promise.all([
+      d3.json("geo/municipalities.geojson"),
+      d3.json("data/municipality_lookup.json"),
+      d3.json("data/municipalities_2022.json"),
+    ]);
+    rewind(municipalitiesGeo);
+    setupSwing(municipalitiesGeo, statesGeo, lookup, baseline2022);
+    renderSwing();
+  } catch (error) {
+    console.error(error);
+    setTimeout(() => loadSwing(statesGeo), 15000);
+  }
+}
+
+async function start() {
+  try {
+    const [statesGeo, world] = await Promise.all([d3.json("geo/states.geojson"), d3.json("geo/countries-110m.json")]);
+    rewind(statesGeo);
+    setupBrazil(statesGeo);
+    setupAbroad(world);
+    await refresh();
+    setInterval(refresh, 60000);
+    loadSwing(statesGeo);
+  } catch (error) {
+    console.error(error);
+    document.getElementById("status-text").textContent = "Couldn't load the page. Retrying in 15 s.";
+    setTimeout(start, 15000);
+  }
+}
+start();
 </script>
 </body>
 </html>
