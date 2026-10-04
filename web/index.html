@@ -212,6 +212,10 @@ body {
 .card-foot .credit:hover { text-decoration: underline; }
 .site-foot b { color: var(--ink-2); font-weight: 600; }
 .site-foot a { color: var(--ink-2); }
+.export-sheet { position: fixed; left: -100000px; top: 0; display: grid; grid-template-columns: 1fr 1fr; background: var(--card); }
+.export-sheet .card { border-radius: 0; box-shadow: none; }
+.export-sheet .card + .card { border-left: 1px solid var(--rule); }
+.export-panel .card-inner { grid-template-rows: auto minmax(0, 1fr) auto auto; }
 .tooltip {
   position: fixed; z-index: 10; pointer-events: none; max-width: 270px; padding: 10px 12px; border-radius: 8px;
   background: var(--ink); color: var(--card); font-size: 13px; box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .5);
@@ -253,7 +257,7 @@ body {
     <aside class="rail">
       <div class="rail-actions">
         <button class="save" data-card="card-brazil" data-name="brazil-live">Save image</button>
-        <p class="rail-note">Downloads the card as a 1080 × 1350 PNG.</p>
+        <p class="rail-note">Downloads the map card and the treemap side by side as a 2160 × 1350 PNG.</p>
       </div>
       <p class="rail-note">Each state takes the color of the candidate leading there. Paler shades mean a closer race. Hover a state for details.</p>
       <h2>States sized by voters</h2>
@@ -281,7 +285,7 @@ body {
     <aside class="rail">
       <div class="rail-actions">
         <button class="save" data-card="card-abroad" data-name="brazil-abroad">Save image</button>
-        <p class="rail-note">Downloads the card as a 1080 × 1350 PNG.</p>
+        <p class="rail-note">Downloads the map card and the treemap side by side as a 2160 × 1350 PNG.</p>
       </div>
       <p class="rail-note">Brazilians abroad vote only for president, in 186 cities. Bubble size is valid votes counted. Color is the local leader. Polls abroad close at 17:00 local time, so cities in the Americas report later than Europe and Asia.</p>
       <h2>Cities sized by voters</h2>
@@ -772,15 +776,58 @@ if (DEMO) {
 const initialTab = document.getElementById(`tab-${location.hash.slice(1)}`);
 if (initialTab) selectTab(initialTab);
 
+const TREEMAP_PANELS = {
+  "card-brazil": {
+    treemap: "#br-treemap svg",
+    eyebrow: "Where the voters are",
+    title: "States sized by voters",
+    dek: "Tile area is each state's registered voters, grouped by region. Color is the leading candidate; paler means a closer race.",
+    foot: "br-foot",
+  },
+  "card-abroad": {
+    treemap: "#ab-treemap svg",
+    eyebrow: "Where Brazilians abroad vote",
+    title: "Cities sized by voters",
+    dek: "Tile area is each city's registered voters, grouped by world region. Color is the local leader; paler means a closer race.",
+    foot: "ab-foot",
+  },
+};
+
+function buildExportSheet(card, panel) {
+  const sheet = document.createElement("div");
+  sheet.className = "export-sheet";
+  sheet.style.width = `${card.offsetWidth * 2}px`;
+  const treemapCard = document.createElement("article");
+  treemapCard.className = "card export-panel";
+  treemapCard.innerHTML = `
+    <div class="card-inner">
+      <div>
+        ${DEMO ? card.querySelector(".demo-flag").outerHTML : ""}
+        <div class="eyebrow"><span>${panel.eyebrow}</span><span>${card.querySelector(".card-date").textContent}</span></div>
+        <h2 class="headline">${panel.title}</h2>
+        <p class="dek">${panel.dek}</p>
+      </div>
+      <div class="map"></div>
+      <div class="legend">${document.getElementById("br-legend").innerHTML}</div>
+      <div class="card-foot">${card.querySelector(".card-foot span").outerHTML}<span>${document.getElementById(panel.foot).textContent}</span></div>
+    </div>`;
+  treemapCard.querySelector(".map").append(document.querySelector(panel.treemap).cloneNode(true));
+  sheet.append(card.cloneNode(true), treemapCard);
+  document.body.append(sheet);
+  return sheet;
+}
+
 document.querySelectorAll(".save").forEach((button) => button.addEventListener("click", async () => {
   const card = document.getElementById(button.dataset.card);
+  const panel = TREEMAP_PANELS[button.dataset.card];
   hideTooltip();
   button.disabled = true;
   button.textContent = "Saving…";
+  const sheet = panel ? buildExportSheet(card, panel) : null;
   try {
-    const dataUrl = await htmlToImage.toPng(card, {
+    const dataUrl = await htmlToImage.toPng(sheet ?? card, {
       pixelRatio: 1080 / card.offsetWidth,
-      style: { borderRadius: "0", boxShadow: "none" },
+      style: sheet ? { position: "static", left: "0" } : { borderRadius: "0", boxShadow: "none" },
     });
     const link = document.createElement("a");
     link.href = dataUrl;
@@ -791,6 +838,7 @@ document.querySelectorAll(".save").forEach((button) => button.addEventListener("
     console.error(error);
     button.textContent = "Couldn't save, try again";
   } finally {
+    sheet?.remove();
     button.disabled = false;
     setTimeout(() => { button.textContent = "Save image"; }, 2500);
   }
