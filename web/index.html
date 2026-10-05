@@ -858,13 +858,17 @@ function renderStatus(states) {
   const national = states.national;
   const checkedAt = states.fetched_at.slice(11, 16);
   const minutesSinceFetch = (Date.now() - Date.parse(states.fetched_at)) / 60000;
-  const stale = minutesSinceFetch > STALE_AFTER_MINUTES;
-  const live = national.sections_counted > 0 && !stale;
+  const final = national.sections_total > 0 && national.sections_counted >= national.sections_total;
+  const stale = !final && minutesSinceFetch > STALE_AFTER_MINUTES;
+  const live = national.sections_counted > 0 && !stale && !final;
   status.hidden = DEMO;
   status.classList.toggle("live", live);
   let text = pollsClosed() ? "Waiting for TSE's first results · last checked" : "Waiting for results at 17:00 · last checked";
   let time = checkedAt;
-  if (stale) text = "Updates paused · last data from";
+  if (final) {
+    text = "Final count · TSE update";
+    time = `${clockOf(national.as_of)} BRT`;
+  } else if (stale) text = "Updates paused · last data from";
   else if (live) {
     text = "Live · TSE update";
     time = `${formatPercent(countedPercent(national))} counted · ${clockOf(national.as_of)} BRT`;
