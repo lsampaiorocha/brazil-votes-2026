@@ -491,6 +491,12 @@ function headlineFor(result, scope) {
     if (runoff.length === 2) {
       return { headline: `Runoff: ${displayName(runoff[0])} vs. ${displayName(runoff[1])}`, dek: "No one passed 50% of valid votes. The two meet again on October 25." };
     }
+    // TSE flags "mathematically defined" well before it fills in each candidate's status.
+    if (result.decided) {
+      return firstShare > 50
+        ? { headline: `${displayName(first)} wins in the first round`, dek: `${formatPercent(firstShare)} of valid votes. TSE's feed marks the result as mathematically defined.` }
+        : { headline: `Runoff: ${displayName(first)} vs. ${displayName(second)}`, dek: `${formatPercent(firstShare)} against ${formatPercent(secondShare)}. TSE's feed marks the result as mathematically defined: no one can reach 50%, so the two meet again on October 25.` };
+    }
     return { headline: `${displayName(first)} leads with ${formatPercent(firstShare)}`, dek: `${displayName(second)} is second with ${formatPercent(secondShare)}. More than 50% of valid votes wins without a runoff.` };
   }
   return { headline: `${displayName(first)} leads abroad with ${formatPercent(firstShare)}`, dek: `${displayName(second)} is second with ${formatPercent(secondShare)}, from ${formatInteger(result.valid)} valid votes counted so far.` };

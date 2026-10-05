@@ -20,6 +20,7 @@ def test_parse_unified_result_reads_progress_turnout_and_ranked_votes_from_tse_f
         "valid": 6108218,
         "blank": 241734,
         "null": 422802,
+        "decided": False,
         "candidates": [
             {
                 "number": "15",
@@ -164,6 +165,7 @@ def test_combine_results_adds_up_areas_and_keeps_national_candidate_statuses():
         "valid": 140,
         "blank": 2,
         "null": 4,
+        "decided": False,
         "candidates": [
             {
                 "number": "13",

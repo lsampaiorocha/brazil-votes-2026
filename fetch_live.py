@@ -110,6 +110,7 @@ def combine_results(results: list[dict], calls_from: dict) -> dict:
     return {
         "as_of": max(totalized, key=parse_timestamp) if totalized else None,
         **combined,
+        "decided": calls_from.get("decided", False),
         "candidates": candidates,
     }
 
@@ -145,6 +146,7 @@ def parse_unified_result(payload: dict) -> dict:
         "valid": int(payload["v"]["vv"]),
         "blank": int(payload["v"]["vb"]),
         "null": int(payload["v"]["tvn"]),
+        "decided": payload.get("md") == "s",
         "candidates": candidates,
     }
 
